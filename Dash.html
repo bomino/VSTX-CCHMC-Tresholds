@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Pareto and Stratification Analysis - Procurement Spend</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #1e3a8a;
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 70px;
+            padding: 20px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin: 0 0 10px 0;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .threshold-note {
+            background-color: #fef3c7;
+            color: #92400e;
+            padding: 12px 20px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        /* Summary Section */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .summary-card h3 {
+            color: #2563eb;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .summary-metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .summary-metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #666;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Pareto Container */
+        .pareto-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .pareto-header {
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .pareto-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        .pareto-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background-color: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #2563eb;
+            font-size: 20px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin-bottom: 30px;
+        }
+
+        .supplier-table {
+            margin-top: 30px;
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .supplier-table th {
+            background-color: #2563eb;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .supplier-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .supplier-table tr:hover {
+            background-color: #f3f4f6;
+        }
+
+        .insights {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #eff6ff;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .insight-item {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .insight-icon {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+
+        .categories-included {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9fafb;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .category-list {
+            margin-top: 10px;
+            column-count: 2;
+            column-gap: 30px;
+        }
+
+        .category-item {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .note {
+            background-color: #fef3c7;
+            color: #92400e;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th {
+            background-color: #2563eb;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .comparison-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .comparison-table tr:hover {
+            background-color: #f3f4f6;
+        }
+
+        .comparison-table .category-header {
+            background-color: #e0e7ff;
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        /* Stratification Tables */
+        .stratification-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .strat-table-container {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .strat-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .strat-table th {
+            background-color: #2563eb;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .strat-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: right;
+        }
+
+        .strat-table td:first-child {
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .strat-table tr:hover {
+            background-color: #f3f4f6;
+        }
+
+        .strat-table .total-row {
+            background-color: #e0e7ff;
+            font-weight: bold;
+        }
+
+        .strat-header {
+            background-color: #1e3a8a;
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .pareto-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .category-list {
+                column-count: 1;
+            }
+
+            .stratification-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .navigation {
+                display: none;
+            }
+
+            .main-content {
+                margin-top: 0;
+            }
+
+            .section {
+                display: block !important;
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <div class="navigation">
+        <div class="nav-container">
+            <div class="nav-title">Procurement Analysis Dashboard</div>
+            <div class="nav-links">
+                <a href="#summary" class="nav-link active" onclick="showSection(event, 'summary')">Summary</a>
+                <a href="#facilities-100k" class="nav-link" onclick="showSection(event, 'facilities-100k')">Facilities
+                    ($100K)</a>
+                <a href="#it-100k" class="nav-link" onclick="showSection(event, 'it-100k')">IT & Telecoms ($100K)</a>
+                <a href="#facilities-500k" class="nav-link" onclick="showSection(event, 'facilities-500k')">Facilities
+                    ($500K)</a>
+                <a href="#it-500k" class="nav-link" onclick="showSection(event, 'it-500k')">IT & Telecoms ($500K)</a>
+                <a href="#stratification" class="nav-link"
+                    onclick="showSection(event, 'stratification')">Stratification</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Summary Section -->
+        <div id="summary" class="section active">
+            <div class="header">
+                <h1>Comprehensive Procurement Analysis</h1>
+                <div class="subtitle">Pareto and Stratification Analysis Across Categories and Thresholds</div>
+            </div>
+
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <h3>📊 Analysis Overview</h3>
+                    <div class="summary-metric">
+                        <span class="metric-label">Analysis Date</span>
+                        <span class="metric-value">December 2024</span>
+                    </div>
+                    <div class="summary-metric">
+                        <span class="metric-label">Categories Analyzed</span>
+                        <span class="metric-value">2 (Facilities & IT/Telecoms)</span>
+                    </div>
+                    <div class="summary-metric">
+                        <span class="metric-label">Thresholds Examined</span>
+                        <span class="metric-value">$100K and $500K</span>
+                    </div>
+                    <div class="summary-metric">
+                        <span class="metric-label">Total Suppliers</span>
+                        <span class="metric-value">230+ unique vendors</span>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <h3>🏢 Facilities Category</h3>
+                    <div class="summary-metric">
+                        <span class="metric-label">Spend at $100K threshold</span>
+                        <span class="metric-value">$14.68M</span>
+                    </div>
+                    <div class="summary-metric">
+                        <span class="metric-label">Spend at $500K threshold</span>
+                        <span class="metric-value">$21.25M</span>
+                    </div>
+                    <div class="summary-metric">
+                        <span class="metric-label">80% Concentration ($100K)</span>
+                        <span class="metric-value">32 suppliers</span>
+                    </div>
+                    <div class="summary-metric">
+                        <span class="metric-label">80% Concentration ($500K)</span>
+                        <span class="metric-value">27 suppliers</span>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <h3>💻 IT & Telecoms Category</h3>
+                    <div class="summary-metric">
+                        <span class="metric-label">Spend at $100K threshold</span>
+                        <span class="metric-value">$12.82M</span>
+                    </div>
+                    <div class="summary-metric">
+                        <span class="metric-label">Spend at $500K threshold</span>
+                        <span class="metric-value">$24.30M</span>
+                    </div>
+                    <div class="summary-metric">
+                        <span class="metric-label">80% Concentration ($100K)</span>
+                        <span class="metric-value">10 suppliers</span>
+                    </div>
+                    <div class="summary-metric">
+                        <span class="metric-label">80% Concentration ($500K)</span>
+                        <span class="metric-value">16 suppliers</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comparison-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Threshold</th>
+                            <th>Total Spend</th>
+                            <th>Suppliers</th>
+                            <th>80% Achieved</th>
+                            <th>Top Supplier</th>
+                            <th>Top Share</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="category-header">
+                            <td colspan="7">Facilities Category</td>
+                        </tr>
+                        <tr>
+                            <td>Facilities</td>
+                            <td>$100K</td>
+                            <td>$14.68M</td>
+                            <td>175</td>
+                            <td>32 suppliers (18%)</td>
+                            <td>TriVersity Construction</td>
+                            <td>10.0%</td>
+                        </tr>
+                        <tr>
+                            <td>Facilities</td>
+                            <td>$500K</td>
+                            <td>$21.25M</td>
+                            <td>178</td>
+                            <td>27 suppliers (15%)</td>
+                            <td>TriVersity Construction</td>
+                            <td>17.8%</td>
+                        </tr>
+                        <tr class="category-header">
+                            <td colspan="7">IT & Telecoms Category</td>
+                        </tr>
+                        <tr>
+                            <td>IT & Telecoms</td>
+                            <td>$100K</td>
+                            <td>$12.82M</td>
+                            <td>55</td>
+                            <td>10 suppliers (18%)</td>
+                            <td>Encore Technologies</td>
+                            <td>56.5%</td>
+                        </tr>
+                        <tr>
+                            <td>IT & Telecoms</td>
+                            <td>$500K</td>
+                            <td>$24.30M</td>
+                            <td>61</td>
+                            <td>16 suppliers (26%)</td>
+                            <td>Encore Technologies</td>
+                            <td>46.8%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="insights">
+                <div class="insight-item">
+                    <span class="insight-icon">🔍</span>
+                    <strong>Key Finding:</strong> Facilities category shows high fragmentation across both thresholds,
+                    while IT & Telecoms is dominated by Encore Technologies
+                </div>
+                <div class="insight-item">
+                    <span class="insight-icon">📈</span>
+                    <strong>Threshold Impact:</strong> Higher threshold ($500K) captures additional strategic spend but
+                    maintains similar concentration patterns
+                </div>
+                <div class="insight-item">
+                    <span class="insight-icon">💡</span>
+                    <strong>Optimization Focus:</strong> Facilities offers greater consolidation opportunity; IT
+                    requires contract optimization with dominant supplier
+                </div>
+            </div>
+        </div>
+
+        <!-- Facilities $100K Section -->
+        <div id="facilities-100k" class="section">
+            <div class="header">
+                <h1>Facilities Category - $100K Threshold</h1>
+                <div class="subtitle">Pareto Analysis for Transactions Under $100,000</div>
+            </div>
+
+            <div class="pareto-container">
+                <div class="pareto-header">
+                    <div class="pareto-title">Facilities Spend Analysis</div>
+                </div>
+
+                <div class="pareto-stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Total Spend</div>
+                        <div class="stat-value">$14.68M</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Total Suppliers</div>
+                        <div class="stat-value">175</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">80% Concentration</div>
+                        <div class="stat-value">32 suppliers</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Top Supplier Share</div>
+                        <div class="stat-value">10.0%</div>
+                    </div>
+                </div>
+
+                <div class="note">
+                    Note: This analysis includes Office Equipment suppliers (Guy Brown, Office Depot) which may be
+                    categorized differently in some analyses.
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="facilities100kChart"></canvas>
+                </div>
+
+                <table class="supplier-table">
+                    <thead>
+                        <tr>
+                            <th width="40%">Supplier</th>
+                            <th width="20%">Spend</th>
+                            <th width="15%">% of Category</th>
+                            <th width="15%">Cumulative %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>TriVersity Construction Company LLC</td>
+                            <td>$1,471,705</td>
+                            <td>10.02%</td>
+                            <td>10.02%</td>
+                        </tr>
+                        <tr>
+                            <td>River City Furniture, LLC.</td>
+                            <td>$1,265,224</td>
+                            <td>8.62%</td>
+                            <td>18.64%</td>
+                        </tr>
+                        <tr>
+                            <td>Guy Brown, LLC</td>
+                            <td>$1,244,547</td>
+                            <td>8.48%</td>
+                            <td>27.12%</td>
+                        </tr>
+                        <tr>
+                            <td>Peck Hannaford & Briggs</td>
+                            <td>$1,023,568</td>
+                            <td>6.97%</td>
+                            <td>34.09%</td>
+                        </tr>
+                        <tr>
+                            <td>Amazon.com</td>
+                            <td>$953,353</td>
+                            <td>6.49%</td>
+                            <td>40.58%</td>
+                        </tr>
+                        <tr>
+                            <td>The Fishel Company</td>
+                            <td>$610,835</td>
+                            <td>4.16%</td>
+                            <td>44.74%</td>
+                        </tr>
+                        <tr>
+                            <td>The Nelson Stark Company</td>
+                            <td>$490,678</td>
+                            <td>3.34%</td>
+                            <td>48.08%</td>
+                        </tr>
+                        <tr>
+                            <td>Winnelson Company</td>
+                            <td>$434,825</td>
+                            <td>2.96%</td>
+                            <td>51.04%</td>
+                        </tr>
+                        <tr>
+                            <td>Ketchum & Walton Co.</td>
+                            <td>$410,161</td>
+                            <td>2.79%</td>
+                            <td>53.83%</td>
+                        </tr>
+                        <tr>
+                            <td>Office Depot</td>
+                            <td>$397,939</td>
+                            <td>2.71%</td>
+                            <td>56.54%</td>
+                        </tr>
+                        <tr>
+                            <td>Next 11-20 Suppliers</td>
+                            <td>$2,255,808</td>
+                            <td>15.36%</td>
+                            <td>71.92%</td>
+                        </tr>
+                        <tr>
+                            <td>Next 21-32 Suppliers</td>
+                            <td>$1,201,795</td>
+                            <td>8.19%</td>
+                            <td>80.11%</td>
+                        </tr>
+                        <tr style="background-color: #f3f4f6; font-weight: bold;">
+                            <td>Others (143 suppliers)</td>
+                            <td>$2,921,673</td>
+                            <td>19.90%</td>
+                            <td>100.00%</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="insights">
+                    <div class="insight-item">
+                        <span class="insight-icon">📊</span>
+                        <strong>Highly Fragmented:</strong> 175 suppliers with no dominant player (top supplier only
+                        10%)
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">🎯</span>
+                        <strong>Long Tail:</strong> 143 suppliers (82%) represent only 20% of spend
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">💡</span>
+                        <strong>Major Opportunity:</strong> Consolidate from 175 to ~40 suppliers could save 15-20%
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">🏢</span>
+                        <strong>Mixed Categories:</strong> Includes construction, furniture, office supplies, HVAC,
+                        plumbing
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">💰</span>
+                        <strong>Potential Savings:</strong> $2.2M - $2.9M annually through consolidation and process
+                        improvement
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- IT & Telecoms $100K Section -->
+        <div id="it-100k" class="section">
+            <div class="header">
+                <h1>IT & Telecoms Category - $100K Threshold</h1>
+                <div class="subtitle">Pareto Analysis for Transactions Under $100,000</div>
+            </div>
+
+            <div class="pareto-container">
+                <div class="pareto-header">
+                    <div class="pareto-title">IT & Telecoms Spend Analysis</div>
+                </div>
+                <div class="pareto-stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Total Spend</div>
+                        <div class="stat-value">$12.82M</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Total Suppliers</div>
+                        <div class="stat-value">55</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">80% Concentration</div>
+                        <div class="stat-value">10 suppliers</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Encore Share</div>
+                        <div class="stat-value">56.5%</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="it100kChart"></canvas>
+                </div>
+
+                <table class="supplier-table">
+                    <thead>
+                        <tr>
+                            <th width="40%">Supplier</th>
+                            <th width="20%">Spend</th>
+                            <th width="15%">% of Category</th>
+                            <th width="15%">Cumulative %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Encore Technologies</td>
+                            <td>$7,244,948</td>
+                            <td>56.49%</td>
+                            <td>56.49%</td>
+                        </tr>
+                        <tr>
+                            <td>Oracle America Inc</td>
+                            <td>$879,875</td>
+                            <td>6.86%</td>
+                            <td>63.35%</td>
+                        </tr>
+                        <tr>
+                            <td>Veeva Systems Inc.</td>
+                            <td>$483,404</td>
+                            <td>3.77%</td>
+                            <td>67.12%</td>
+                        </tr>
+                        <tr>
+                            <td>ATR Distributing Co., Inc.</td>
+                            <td>$328,862</td>
+                            <td>2.56%</td>
+                            <td>69.69%</td>
+                        </tr>
+                        <tr>
+                            <td>CDW Government, Inc.</td>
+                            <td>$302,302</td>
+                            <td>2.36%</td>
+                            <td>72.04%</td>
+                        </tr>
+                        <tr>
+                            <td>RESLV LLC</td>
+                            <td>$234,790</td>
+                            <td>1.83%</td>
+                            <td>73.88%</td>
+                        </tr>
+                        <tr>
+                            <td>CBTS Technology Solutions LLC</td>
+                            <td>$226,867</td>
+                            <td>1.77%</td>
+                            <td>75.64%</td>
+                        </tr>
+                        <tr>
+                            <td>Salesforce.com, Inc</td>
+                            <td>$179,380</td>
+                            <td>1.40%</td>
+                            <td>77.04%</td>
+                        </tr>
+                        <tr>
+                            <td>Protiviti</td>
+                            <td>$177,385</td>
+                            <td>1.38%</td>
+                            <td>78.43%</td>
+                        </tr>
+                        <tr>
+                            <td>CTS Telecommunications</td>
+                            <td>$177,001</td>
+                            <td>1.38%</td>
+                            <td>79.81%</td>
+                        </tr>
+                        <tr>
+                            <td>Next 11-20 Suppliers</td>
+                            <td>$1,264,554</td>
+                            <td>9.86%</td>
+                            <td>89.67%</td>
+                        </tr>
+                        <tr style="background-color: #f3f4f6; font-weight: bold;">
+                            <td>Others (35 suppliers)</td>
+                            <td>$1,325,195</td>
+                            <td>10.33%</td>
+                            <td>100.00%</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="categories-included">
+                    <strong>Categories Included in IT & Telecoms:</strong>
+                    <div class="category-list">
+                        <div class="category-item">• IT Hardware</div>
+                        <div class="category-item">• IT Services</div>
+                        <div class="category-item">• Computer Engineering Services</div>
+                        <div class="category-item">• Telecommunications</div>
+                        <div class="category-item">• IT Software</div>
+                        <div class="category-item">• Data Center Services</div>
+                    </div>
+                </div>
+
+                <div class="insights">
+                    <div class="insight-item">
+                        <span class="insight-icon">⚠️</span>
+                        <strong>High Concentration Risk:</strong> Encore Technologies controls 56.5% of total IT spend
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">📊</span>
+                        <strong>Efficient Consolidation:</strong> Only 10 suppliers needed to reach 80% of spend
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">🔍</span>
+                        <strong>Contract Focus:</strong> Optimize terms with Encore given their dominant position
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">🎯</span>
+                        <strong>Tail Opportunity:</strong> 35 suppliers (64%) account for only 10% of spend
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">💡</span>
+                        <strong>Risk Mitigation:</strong> Develop backup suppliers to reduce dependency on Encore
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">💰</span>
+                        <strong>Savings Potential:</strong> $1.3M - $1.9M through contract optimization and tail
+                        consolidation
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Facilities $500K Section -->
+        <div id="facilities-500k" class="section">
+            <div class="header">
+                <h1>Facilities Category - $500K Threshold</h1>
+                <div class="subtitle">Pareto Analysis for Transactions Under $500,000</div>
+                <div class="threshold-note">
+                    Analysis includes all transactions under $500,000
+                </div>
+            </div>
+
+            <div class="pareto-container">
+                <div class="pareto-header">
+                    <div class="pareto-title">Facilities Category</div>
+                </div>
+                <div class="pareto-stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Total Spend</div>
+                        <div class="stat-value">$21.25M</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Total Suppliers</div>
+                        <div class="stat-value">178</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">80% Concentration</div>
+                        <div class="stat-value">27 suppliers</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Top Supplier Share</div>
+                        <div class="stat-value">17.8%</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="facilities500kChart"></canvas>
+                </div>
+
+                <table class="supplier-table">
+                    <thead>
+                        <tr>
+                            <th width="40%">Supplier</th>
+                            <th width="20%">Spend</th>
+                            <th width="15%">% of Category</th>
+                            <th width="15%">Cumulative %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>TriVersity Construction Company LLC</td>
+                            <td>$3,776,726</td>
+                            <td>17.8%</td>
+                            <td>17.8%</td>
+                        </tr>
+                        <tr>
+                            <td>River City Furniture, LLC.</td>
+                            <td>$2,661,019</td>
+                            <td>12.5%</td>
+                            <td>30.3%</td>
+                        </tr>
+                        <tr>
+                            <td>Guy Brown, LLC</td>
+                            <td>$1,244,547</td>
+                            <td>5.9%</td>
+                            <td>36.2%</td>
+                        </tr>
+                        <tr>
+                            <td>Peck Hannaford & Briggs</td>
+                            <td>$1,023,568</td>
+                            <td>4.8%</td>
+                            <td>41.0%</td>
+                        </tr>
+                        <tr>
+                            <td>Amazon.com</td>
+                            <td>$953,353</td>
+                            <td>4.5%</td>
+                            <td>45.5%</td>
+                        </tr>
+                        <tr>
+                            <td>The Fishel Company</td>
+                            <td>$939,943</td>
+                            <td>4.4%</td>
+                            <td>49.9%</td>
+                        </tr>
+                        <tr>
+                            <td>Ketchum & Walton Co.</td>
+                            <td>$522,661</td>
+                            <td>2.5%</td>
+                            <td>52.4%</td>
+                        </tr>
+                        <tr>
+                            <td>The Nelson Stark Company</td>
+                            <td>$490,678</td>
+                            <td>2.3%</td>
+                            <td>54.7%</td>
+                        </tr>
+                        <tr>
+                            <td>Ikon Office Solutions, Inc</td>
+                            <td>$460,000</td>
+                            <td>2.2%</td>
+                            <td>56.9%</td>
+                        </tr>
+                        <tr>
+                            <td>Winnelson Company</td>
+                            <td>$434,825</td>
+                            <td>2.0%</td>
+                            <td>58.9%</td>
+                        </tr>
+                        <tr>
+                            <td>Next 11-27 Suppliers</td>
+                            <td>$4,616,987</td>
+                            <td>21.73%</td>
+                            <td>80.63%</td>
+                        </tr>
+                        <tr style="background-color: #f3f4f6; font-weight: bold;">
+                            <td>Others (151 suppliers)</td>
+                            <td>$4,123,665</td>
+                            <td>19.41%</td>
+                            <td>100.0%</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="categories-included">
+                    <strong>Categories Included:</strong>
+                    <div class="category-list">
+                        <div class="category-item">• Building Maintenance</div>
+                        <div class="category-item">• Office Equipment & Supplies</div>
+                        <div class="category-item">• Operating Supplies & Equipment</div>
+                        <div class="category-item">• Furniture and Fixtures</div>
+                        <div class="category-item">• HVAC Installation & Maintenance</div>
+                        <div class="category-item">• Plumbing Maintenance</div>
+                        <div class="category-item">• Electrical Services</div>
+                        <div class="category-item">• Cleaning Services</div>
+                        <div class="category-item">• Landscaping Services</div>
+                    </div>
+                </div>
+
+                <div class="insights">
+                    <div class="insight-item">
+                        <span class="insight-icon">📊</span>
+                        <strong>Fragmented Supply Base:</strong> 178 suppliers with top supplier at only 17.8%
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">🎯</span>
+                        <strong>Long Tail:</strong> 151 suppliers (85%) represent only 19.41% of spend
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">💡</span>
+                        <strong>Major Opportunity:</strong> Consolidate from 178 to ~50 suppliers
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">💰</span>
+                        <strong>Savings Potential:</strong> $3.2M - $4.2M through consolidation and automation
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- IT & Telecoms $500K Section -->
+        <div id="it-500k" class="section">
+            <div class="header">
+                <h1>IT & Telecoms Category - $500K Threshold</h1>
+                <div class="subtitle">Pareto Analysis for Transactions Under $500,000</div>
+                <div class="threshold-note">
+                    Analysis includes all transactions under $500,000
+                </div>
+            </div>
+
+            <div class="pareto-container">
+                <div class="pareto-header">
+                    <div class="pareto-title">IT & Telecoms Category</div>
+                </div>
+                <div class="pareto-stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Total Spend</div>
+                        <div class="stat-value">$24.30M</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Total Suppliers</div>
+                        <div class="stat-value">61</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">80% Concentration</div>
+                        <div class="stat-value">16 suppliers</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Encore Share</div>
+                        <div class="stat-value">46.8%</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="it500kChart"></canvas>
+                </div>
+
+                <table class="supplier-table">
+                    <thead>
+                        <tr>
+                            <th width="40%">Supplier</th>
+                            <th width="20%">Spend</th>
+                            <th width="15%">% of Category</th>
+                            <th width="15%">Cumulative %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Encore Technologies</td>
+                            <td>$11,369,372</td>
+                            <td>46.8%</td>
+                            <td>46.8%</td>
+                        </tr>
+                        <tr>
+                            <td>Oracle America Inc</td>
+                            <td>$1,124,012</td>
+                            <td>4.6%</td>
+                            <td>51.4%</td>
+                        </tr>
+                        <tr>
+                            <td>Cloud 2 Limited</td>
+                            <td>$942,850</td>
+                            <td>3.9%</td>
+                            <td>55.3%</td>
+                        </tr>
+                        <tr>
+                            <td>NeoView Inc.</td>
+                            <td>$750,000</td>
+                            <td>3.1%</td>
+                            <td>58.4%</td>
+                        </tr>
+                        <tr>
+                            <td>ATR Distributing Co., Inc.</td>
+                            <td>$550,185</td>
+                            <td>2.3%</td>
+                            <td>60.7%</td>
+                        </tr>
+                        <tr>
+                            <td>Amazon Web Services, Inc</td>
+                            <td>$489,400</td>
+                            <td>2.0%</td>
+                            <td>62.7%</td>
+                        </tr>
+                        <tr>
+                            <td>Adex International</td>
+                            <td>$486,884</td>
+                            <td>2.0%</td>
+                            <td>64.7%</td>
+                        </tr>
+                        <tr>
+                            <td>Veeva Systems Inc.</td>
+                            <td>$483,404</td>
+                            <td>2.0%</td>
+                            <td>66.7%</td>
+                        </tr>
+                        <tr>
+                            <td>Icertis, Inc</td>
+                            <td>$481,333</td>
+                            <td>2.0%</td>
+                            <td>68.7%</td>
+                        </tr>
+                        <tr>
+                            <td>RESLV LLC</td>
+                            <td>$444,790</td>
+                            <td>1.8%</td>
+                            <td>70.5%</td>
+                        </tr>
+                        <tr>
+                            <td>Next 11-16 Suppliers</td>
+                            <td>$2,252,620</td>
+                            <td>9.27%</td>
+                            <td>79.77%</td>
+                        </tr>
+                        <tr style="background-color: #f3f4f6; font-weight: bold;">
+                            <td>Others (45 suppliers)</td>
+                            <td>$4,922,213</td>
+                            <td>20.23%</td>
+                            <td>100.0%</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="categories-included">
+                    <strong>Categories Included:</strong>
+                    <div class="category-list">
+                        <div class="category-item">• IT Hardware</div>
+                        <div class="category-item">• IT Services</div>
+                        <div class="category-item">• Computer Engineering Services</div>
+                        <div class="category-item">• Telecommunications</div>
+                        <div class="category-item">• IT Software</div>
+                        <div class="category-item">• Data Center Services</div>
+                    </div>
+                </div>
+
+                <div class="insights">
+                    <div class="insight-item">
+                        <span class="insight-icon">⚠️</span>
+                        <strong>High Concentration:</strong> Encore Technologies controls 46.8% of spend
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">📊</span>
+                        <strong>Efficient Top Tier:</strong> Only 16 suppliers needed to reach 80%
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">🔍</span>
+                        <strong>Risk Management:</strong> Heavy dependency on Encore requires mitigation
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">🎯</span>
+                        <strong>Tail Opportunity:</strong> 45 suppliers (74%) represent only 20% of spend
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">💰</span>
+                        <strong>Savings Focus:</strong> Contract optimization with Encore + tail consolidation
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stratification Analysis Section -->
+        <div id="stratification" class="section">
+            <div class="header">
+                <h1>Spend Stratification Analysis</h1>
+                <div class="subtitle">Transaction and Supplier Distribution by Spend Bands</div>
+            </div>
+
+            <div class="pareto-container">
+                <div class="pareto-header">
+                    <div class="pareto-title">Overview: Volume vs Value Distribution</div>
+                </div>
+
+                <div class="insights">
+                    <div class="insight-item">
+                        <span class="insight-icon">📊</span>
+                        <strong>Key Pattern:</strong> Small transactions dominate volume but large transactions drive
+                        spend value
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">🎯</span>
+                        <strong>Automation Target:</strong> 70,000+ transactions under $5K are prime candidates for
+                        P-card programs
+                    </div>
+                    <div class="insight-item">
+                        <span class="insight-icon">💡</span>
+                        <strong>Strategic Focus:</strong> Different spend bands require different procurement strategies
+                    </div>
+                </div>
+
+                <div class="stratification-grid">
+                    <!-- Facilities $100K Stratification -->
+                    <div class="strat-table-container">
+                        <div class="strat-header">Facilities - $100K Threshold</div>
+                        <table class="strat-table">
+                            <thead>
+                                <tr>
+                                    <th>Spend Band</th>
+                                    <th>Spend</th>
+                                    <th>% Spend</th>
+                                    <th>Transactions</th>
+                                    <th>Suppliers</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>$0 - $1K</td>
+                                    <td>$3,903,014</td>
+                                    <td>26.58%</td>
+                                    <td>68,906</td>
+                                    <td>131</td>
+                                </tr>
+                                <tr>
+                                    <td>$1K - $2K</td>
+                                    <td>$1,067,095</td>
+                                    <td>7.27%</td>
+                                    <td>751</td>
+                                    <td>97</td>
+                                </tr>
+                                <tr>
+                                    <td>$2K - $5K</td>
+                                    <td>$1,836,903</td>
+                                    <td>12.51%</td>
+                                    <td>572</td>
+                                    <td>90</td>
+                                </tr>
+                                <tr>
+                                    <td>$5K - $10K</td>
+                                    <td>$1,379,476</td>
+                                    <td>9.40%</td>
+                                    <td>194</td>
+                                    <td>54</td>
+                                </tr>
+                                <tr>
+                                    <td>$10K - $25K</td>
+                                    <td>$2,364,362</td>
+                                    <td>16.10%</td>
+                                    <td>153</td>
+                                    <td>45</td>
+                                </tr>
+                                <tr>
+                                    <td>$25K - $50K</td>
+                                    <td>$2,200,517</td>
+                                    <td>14.99%</td>
+                                    <td>64</td>
+                                    <td>28</td>
+                                </tr>
+                                <tr>
+                                    <td>$50K - $100K</td>
+                                    <td>$1,930,743</td>
+                                    <td>13.15%</td>
+                                    <td>27</td>
+                                    <td>12</td>
+                                </tr>
+                                <tr class="total-row">
+                                    <td>Grand Total</td>
+                                    <td>$14,682,111</td>
+                                    <td>100.00%</td>
+                                    <td>70,667</td>
+                                    <td>175</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- IT & Telecoms $100K Stratification -->
+                    <div class="strat-table-container">
+                        <div class="strat-header">IT & Telecoms - $100K Threshold</div>
+                        <table class="strat-table">
+                            <thead>
+                                <tr>
+                                    <th>Spend Band</th>
+                                    <th>Spend</th>
+                                    <th>% Spend</th>
+                                    <th>Transactions</th>
+                                    <th>Suppliers</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>$0 - $1K</td>
+                                    <td>$800,790</td>
+                                    <td>6.24%</td>
+                                    <td>3,326</td>
+                                    <td>26</td>
+                                </tr>
+                                <tr>
+                                    <td>$1K - $2K</td>
+                                    <td>$843,360</td>
+                                    <td>6.58%</td>
+                                    <td>645</td>
+                                    <td>17</td>
+                                </tr>
+                                <tr>
+                                    <td>$2K - $5K</td>
+                                    <td>$1,266,220</td>
+                                    <td>9.87%</td>
+                                    <td>421</td>
+                                    <td>25</td>
+                                </tr>
+                                <tr>
+                                    <td>$5K - $10K</td>
+                                    <td>$848,465</td>
+                                    <td>6.62%</td>
+                                    <td>125</td>
+                                    <td>19</td>
+                                </tr>
+                                <tr>
+                                    <td>$10K - $25K</td>
+                                    <td>$2,013,184</td>
+                                    <td>15.70%</td>
+                                    <td>123</td>
+                                    <td>24</td>
+                                </tr>
+                                <tr>
+                                    <td>$25K - $50K</td>
+                                    <td>$3,049,649</td>
+                                    <td>23.78%</td>
+                                    <td>90</td>
+                                    <td>27</td>
+                                </tr>
+                                <tr>
+                                    <td>$50K - $100K</td>
+                                    <td>$4,002,896</td>
+                                    <td>31.21%</td>
+                                    <td>55</td>
+                                    <td>22</td>
+                                </tr>
+                                <tr class="total-row">
+                                    <td>Grand Total</td>
+                                    <td>$12,824,563</td>
+                                    <td>100.00%</td>
+                                    <td>4,785</td>
+                                    <td>55</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Facilities $500K Stratification -->
+                    <div class="strat-table-container">
+                        <div class="strat-header">Facilities - $500K Threshold</div>
+                        <table class="strat-table">
+                            <thead>
+                                <tr>
+                                    <th>Spend Band</th>
+                                    <th>Spend</th>
+                                    <th>% Spend</th>
+                                    <th>Transactions</th>
+                                    <th>Suppliers</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>$0 - $1K</td>
+                                    <td>$3,903,014.19</td>
+                                    <td>18.37%</td>
+                                    <td>68,906</td>
+                                    <td>131</td>
+                                </tr>
+                                <tr>
+                                    <td>$1K - $2K</td>
+                                    <td>$1,067,095.04</td>
+                                    <td>5.02%</td>
+                                    <td>751</td>
+                                    <td>97</td>
+                                </tr>
+                                <tr>
+                                    <td>$2K - $5K</td>
+                                    <td>$1,836,903.47</td>
+                                    <td>8.65%</td>
+                                    <td>572</td>
+                                    <td>90</td>
+                                </tr>
+                                <tr>
+                                    <td>$5K - $10K</td>
+                                    <td>$1,379,475.78</td>
+                                    <td>6.49%</td>
+                                    <td>194</td>
+                                    <td>54</td>
+                                </tr>
+                                <tr>
+                                    <td>$10K - $25K</td>
+                                    <td>$2,364,362.33</td>
+                                    <td>11.13%</td>
+                                    <td>153</td>
+                                    <td>45</td>
+                                </tr>
+                                <tr>
+                                    <td>$25K - $50K</td>
+                                    <td>$2,200,516.89</td>
+                                    <td>10.36%</td>
+                                    <td>64</td>
+                                    <td>28</td>
+                                </tr>
+                                <tr>
+                                    <td>$50K - $100K</td>
+                                    <td>$1,930,743.66</td>
+                                    <td>9.09%</td>
+                                    <td>27</td>
+                                    <td>12</td>
+                                </tr>
+                                <tr>
+                                    <td>$100K - $500K</td>
+                                    <td>$6,565,861.46</td>
+                                    <td>30.90%</td>
+                                    <td>30</td>
+                                    <td>15</td>
+                                </tr>
+                                <tr class="total-row">
+                                    <td>Grand Total</td>
+                                    <td>$21,247,972.52</td>
+                                    <td>100.00%</td>
+                                    <td>70,697</td>
+                                    <td>178</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- IT & Telecoms $500K Stratification -->
+                    <div class="strat-table-container">
+                        <div class="strat-header">IT & Telecoms - $500K Threshold</div>
+                        <table class="strat-table">
+                            <thead>
+                                <tr>
+                                    <th>Spend Band</th>
+                                    <th>Spend</th>
+                                    <th>% Spend</th>
+                                    <th>Transactions</th>
+                                    <th>Suppliers</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>$0 - $1K</td>
+                                    <td>$800,790</td>
+                                    <td>3.30%</td>
+                                    <td>3,326</td>
+                                    <td>26</td>
+                                </tr>
+                                <tr>
+                                    <td>$1K - $2K</td>
+                                    <td>$843,360</td>
+                                    <td>3.47%</td>
+                                    <td>645</td>
+                                    <td>17</td>
+                                </tr>
+                                <tr>
+                                    <td>$2K - $5K</td>
+                                    <td>$1,266,220</td>
+                                    <td>5.21%</td>
+                                    <td>421</td>
+                                    <td>25</td>
+                                </tr>
+                                <tr>
+                                    <td>$5K - $10K</td>
+                                    <td>$848,465</td>
+                                    <td>3.49%</td>
+                                    <td>125</td>
+                                    <td>19</td>
+                                </tr>
+                                <tr>
+                                    <td>$10K - $25K</td>
+                                    <td>$2,013,184</td>
+                                    <td>8.29%</td>
+                                    <td>123</td>
+                                    <td>24</td>
+                                </tr>
+                                <tr>
+                                    <td>$25K - $50K</td>
+                                    <td>$3,049,649</td>
+                                    <td>12.55%</td>
+                                    <td>90</td>
+                                    <td>27</td>
+                                </tr>
+                                <tr>
+                                    <td>$50K - $100K</td>
+                                    <td>$4,002,896</td>
+                                    <td>16.47%</td>
+                                    <td>55</td>
+                                    <td>22</td>
+                                </tr>
+                                <tr>
+                                    <td>$100K - $500K</td>
+                                    <td>$11,472,500</td>
+                                    <td>47.22%</td>
+                                    <td>58</td>
+                                    <td>28</td>
+                                </tr>
+                                <tr class="total-row">
+                                    <td>Grand Total</td>
+                                    <td>$24,297,062</td>
+                                    <td>100.00%</td>
+                                    <td>4,843</td>
+                                    <td>61</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="pareto-container">
+                    <div class="pareto-header">
+                        <div class="pareto-title">Strategic Implications by Spend Band</div>
+                    </div>
+
+                    <div class="summary-grid">
+                        <div class="summary-card">
+                            <h3>💳 $0 - $5K Band</h3>
+                            <div class="summary-metric">
+                                <span class="metric-label">Facilities Transactions</span>
+                                <span class="metric-value">70,229 (97.4%)</span>
+                            </div>
+                            <div class="summary-metric">
+                                <span class="metric-label">IT Transactions</span>
+                                <span class="metric-value">4,392 (91.8%)</span>
+                            </div>
+                            <div class="summary-metric">
+                                <span class="metric-label">Strategy</span>
+                                <span class="metric-value">P-Card Program</span>
+                            </div>
+                            <div class="summary-metric">
+                                <span class="metric-label">Target Savings</span>
+                                <span class="metric-value">10-15% via automation</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <h3>📋 $5K - $50K Band</h3>
+                            <div class="summary-metric">
+                                <span class="metric-label">Facilities Spend</span>
+                                <span class="metric-value">$5.9M (40%)</span>
+                            </div>
+                            <div class="summary-metric">
+                                <span class="metric-label">IT Spend</span>
+                                <span class="metric-value">$5.9M (46%)</span>
+                            </div>
+                            <div class="summary-metric">
+                                <span class="metric-label">Strategy</span>
+                                <span class="metric-value">Simplified RFQ</span>
+                            </div>
+                            <div class="summary-metric">
+                                <span class="metric-label">Target Savings</span>
+                                <span class="metric-value">15-20% via competition</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <h3>🎯 $50K+ Band</h3>
+                            <div class="summary-metric">
+                                <span class="metric-label">Facilities Transactions</span>
+                                <span class="metric-value">57 (0.08%)</span>
+                            </div>
+                            <div class="summary-metric">
+                                <span class="metric-label">IT Transactions</span>
+                                <span class="metric-value">113 (2.3%)</span>
+                            </div>
+                            <div class="summary-metric">
+                                <span class="metric-label">Strategy</span>
+                                <span class="metric-value">Strategic Sourcing</span>
+                            </div>
+                            <div class="summary-metric">
+                                <span class="metric-label">Target Savings</span>
+                                <span class="metric-value">20-30% via negotiation</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="insights">
+                        <div class="insight-item">
+                            <span class="insight-icon">🔍</span>
+                            <strong>Volume vs Value Mismatch:</strong> Facilities has 97% of transactions under $5K but
+                            they represent only 46% of spend
+                        </div>
+                        <div class="insight-item">
+                            <span class="insight-icon">📊</span>
+                            <strong>IT Concentration:</strong> IT shows much higher transaction values with 78% of spend
+                            in transactions over $25K
+                        </div>
+                        <div class="insight-item">
+                            <span class="insight-icon">💰</span>
+                            <strong>Process Cost Impact:</strong> Manual processing of 70,000+ small transactions likely
+                            costs more than potential savings
+                        </div>
+                        <div class="insight-item">
+                            <span class="insight-icon">🎯</span>
+                            <strong>Quick Win:</strong> Implementing P-cards for transactions under $2.5K could
+                            eliminate 90% of transaction volume
+                        </div>
+                        <div class="insight-item">
+                            <span class="insight-icon">💡</span>
+                            <strong>Resource Allocation:</strong> Focus procurement resources on $25K+ transactions
+                            representing 60-70% of spend
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pareto-container">
+                    <div class="pareto-header">
+                        <div class="pareto-title">Implementation Roadmap</div>
+                    </div>
+
+                    <div class="summary-grid">
+                        <div class="summary-card">
+                            <h3>Phase 1: Quick Wins (0-3 months)</h3>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <li>Launch P-card program for transactions under $2.5K</li>
+                                <li>Negotiate with Encore Technologies (IT)</li>
+                                <li>Consolidate top 10 Facilities suppliers</li>
+                                <li>Estimated savings: $1.5M - $2.0M</li>
+                            </ul>
+                        </div>
+
+                        <div class="summary-card">
+                            <h3>Phase 2: Process Optimization (3-6 months)</h3>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <li>Implement catalog buying for common items</li>
+                                <li>Standardize RFQ process for $5K-$50K</li>
+                                <li>Develop preferred supplier agreements</li>
+                                <li>Estimated savings: $1.0M - $1.5M</li>
+                            </ul>
+                        </div>
+
+                        <div class="summary-card">
+                            <h3>Phase 3: Strategic Transformation (6-12 months)</h3>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <li>Category management implementation</li>
+                                <li>Supplier performance scorecards</li>
+                                <li>Demand management initiatives</li>
+                                <li>Estimated savings: $1.5M - $2.5M</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation functionality
+        function showSection(event, sectionId) {
+            // Prevent default anchor behavior
+            event.preventDefault();
+
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+
+            // Add active class to clicked nav link
+            event.target.classList.add('active');
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // Chart configuration
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            if (context.dataset.type === 'bar') {
+                                return 'Spend: $' + (context.parsed.y / 1000000).toFixed(2) + 'M';
+                            } else {
+                                return 'Cumulative: ' + context.parsed.y.toFixed(1) + '%';
+                            }
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        autoSkip: false,
+                        maxRotation: 45,
+                        minRotation: 45,
+                        font: {
+                            size: 11
+                        }
+                    }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Spend ($M)',
+                        font: {
+                            size: 14
+                        }
+                    },
+                    ticks: {
+                        callback: function (value) {
+                            return '$' + (value / 1000000).toFixed(1) + 'M';
+                        }
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Cumulative %',
+                        font: {
+                            size: 14
+                        }
+                    },
+                    ticks: {
+                        callback: function (value) {
+                            return value + '%';
+                        }
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                    min: 0,
+                    max: 100
+                }
+            }
+        };
+
+        // Function to create chart options with title
+        function createChartOptions(title) {
+            return {
+                ...chartOptions,
+                plugins: {
+                    ...chartOptions.plugins,
+                    title: {
+                        display: true,
+                        text: title,
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    }
+                }
+            };
+        }
+
+        // Facilities $100K Chart
+        const facilities100kCtx = document.getElementById('facilities100kChart').getContext('2d');
+        new Chart(facilities100kCtx, {
+            type: 'bar',
+            data: {
+                labels: ['TriVersity', 'River City', 'Guy Brown', 'Peck Hannaford', 'Amazon', 'Fishel Co', 'Nelson Stark', 'Winnelson', 'Ketchum & Walton', 'Office Depot', 'Next 10', 'Next 12', 'Others (143)'],
+                datasets: [{
+                    type: 'bar',
+                    label: 'Spend',
+                    data: [1471705, 1265224, 1244547, 1023568, 953353, 610835, 490678, 434825, 410161, 397939, 2255808, 1201795, 2921673],
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y',
+                }, {
+                    type: 'line',
+                    label: 'Cumulative %',
+                    data: [10.02, 18.64, 27.12, 34.09, 40.58, 44.74, 48.08, 51.04, 53.83, 56.54, 71.90, 80.11, 100],
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    yAxisID: 'y1',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointBackgroundColor: 'rgb(255, 99, 132)',
+                    tension: 0.1
+                }]
+            },
+            options: createChartOptions('Facilities Supplier Concentration - $100K Threshold')
+        });
+
+        // IT & Telecoms $100K Chart
+        const it100kCtx = document.getElementById('it100kChart').getContext('2d');
+        new Chart(it100kCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Encore Tech', 'Oracle', 'Veeva', 'ATR Dist', 'CDW Gov', 'RESLV', 'CBTS', 'Salesforce', 'Protiviti', 'CTS Telecom', 'Next 10', 'Others (35)'],
+                datasets: [{
+                    type: 'bar',
+                    label: 'Spend',
+                    data: [7244948, 879875, 483404, 328862, 302302, 234790, 226867, 179380, 177385, 177001, 1264554, 1325195],
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y',
+                }, {
+                    type: 'line',
+                    label: 'Cumulative %',
+                    data: [56.49, 63.35, 67.12, 69.69, 72.04, 73.88, 75.64, 77.04, 78.43, 79.81, 89.67, 100],
+                    borderColor: 'rgb(255, 159, 64)',
+                    backgroundColor: 'rgba(255, 159, 64, 0.1)',
+                    yAxisID: 'y1',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointBackgroundColor: 'rgb(255, 159, 64)',
+                    tension: 0.1
+                }]
+            },
+            options: createChartOptions('IT & Telecoms Supplier Concentration - $100K Threshold')
+        });
+
+        // Facilities $500K Chart
+        const facilities500kCtx = document.getElementById('facilities500kChart').getContext('2d');
+        new Chart(facilities500kCtx, {
+            type: 'bar',
+            data: {
+                labels: ['TriVersity', 'River City', 'Guy Brown', 'Peck Hannaford', 'Amazon', 'Fishel Co', 'Ketchum & Walton', 'Nelson Stark', 'Ikon Office', 'Winnelson', 'Next 17', 'Others (151)'],
+                datasets: [{
+                    type: 'bar',
+                    label: 'Spend',
+                    data: [3776726, 2661019, 1244547, 1023568, 953353, 939943, 522661, 490678, 460000, 434825, 4616987, 4123665],
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y',
+                }, {
+                    type: 'line',
+                    label: 'Cumulative %',
+                    data: [17.8, 30.3, 36.2, 41.0, 45.5, 49.9, 52.4, 54.7, 56.9, 58.9, 80.63, 100],
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    yAxisID: 'y1',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointBackgroundColor: 'rgb(255, 99, 132)',
+                    tension: 0.1
+                }]
+            },
+            options: createChartOptions('Facilities Supplier Concentration - $500K Threshold')
+        });
+
+        // IT & Telecoms $500K Chart
+        const it500kCtx = document.getElementById('it500kChart').getContext('2d');
+        new Chart(it500kCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Encore Tech', 'Oracle', 'Cloud 2', 'NeoView', 'ATR Dist', 'AWS', 'Adex', 'Veeva', 'Icertis', 'RESLV', 'Next 6', 'Others (45)'],
+                datasets: [{
+                    type: 'bar',
+                    label: 'Spend',
+                    data: [11369372, 1124012, 942850, 750000, 550185, 489400, 486884, 483404, 481333, 444790, 2252620, 4922213],
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y',
+                }, {
+                    type: 'line',
+                    label: 'Cumulative %',
+                    data: [46.8, 51.4, 55.3, 58.4, 60.7, 62.7, 64.7, 66.7, 68.7, 70.5, 79.77, 100],
+                    borderColor: 'rgb(255, 159, 64)',
+                    backgroundColor: 'rgba(255, 159, 64, 0.1)',
+                    yAxisID: 'y1',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointBackgroundColor: 'rgb(255, 159, 64)',
+                    tension: 0.1
+                }]
+            },
+            options: createChartOptions('IT & Telecoms Supplier Concentration - $500K Threshold')
+        });
+    </script>
+</body>
+
+</html>
